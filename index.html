@@ -1493,16 +1493,16 @@ function finishCurrentSet() {
   setTimeout(() => startWaitMusic(), 6900);
   // Nút chọn bộ tiếp theo xuất hiện chậm hơn 15s sau khi màn chúc mừng hiện ra
   const btnNextSet = document.getElementById('btnNextSet');
-  // Nút luôn chiếm chỗ (visibility) nên card không nhảy; hiện mờ→đậm dần sau 20s
+  // Nút luôn chiếm chỗ (visibility) nên card không nhảy; hiện mờ→đậm dần sau 17s
   btnNextSet.classList.remove('show');
   clearTimeout(btnNextSetTimer);
   btnNextSetTimer = setTimeout(() => {
     btnNextSet.classList.add('show');
-  }, 20000);
-  // Giai đoạn 1: chúc mừng 14s → Giai đoạn 2: mời 2 đội tiếp theo lên sân khấu (từ giây 15)
+  }, 17000);
+  // Giai đoạn 1: chúc mừng 6s → Giai đoạn 2: mời 2 đội tiếp theo lên sân khấu (từ giây 7)
   setFinishPhase(1);
   clearTimeout(finishPhaseTimer);
-  finishPhaseTimer = setTimeout(() => setFinishPhase(2), 14000);
+  finishPhaseTimer = setTimeout(() => setFinishPhase(2), 6000);
 }
 
 function scheduleFinishAfterAnswer(delay = 8000) {

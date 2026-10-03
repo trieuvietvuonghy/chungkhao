@@ -673,11 +673,18 @@
     box-shadow: 0 6px 18px rgba(200,16,46,0.4);
     position: relative;
   }
+  .set-btn .set-label {
+    font-size: 13px;
+    display: block;
+    color: #fff;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
   .set-btn .set-num {
-    font-size: 30px;
+    font-size: 44px;
     display: block;
     color: var(--gold-light);
-    margin-bottom: 4px;
+    line-height: 1.1;
   }
   .set-btn:hover:not(:disabled) {
     transform: translateY(-4px) scale(1.04);
@@ -1226,9 +1233,9 @@ function renderSetGrid() {
     }
     if (i === currentSet && quizActive && !finishedSets.includes(i)) {
       btn.classList.add('current');
-      btn.innerHTML = `<span class="set-num">${i + 1}</span>Bộ ${i + 1}`;
+      btn.innerHTML = `<span class="set-label">Bộ đề số</span><span class="set-num">${i + 1}</span>`;
     } else {
-      btn.innerHTML = `<span class="set-num">${i + 1}</span>Bộ ${i + 1}`;
+      btn.innerHTML = `<span class="set-label">Bộ đề số</span><span class="set-num">${i + 1}</span>`;
     }
     btn.onclick = () => switchToSet(i);
     grid.appendChild(btn);

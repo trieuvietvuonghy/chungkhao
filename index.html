@@ -739,13 +739,13 @@
     to { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #1a1a1a; }
   }
 
-  /* Bộ đề thắng cuộc random - phóng to + nhấp nháy 5s */
+  /* Bộ đề thắng cuộc random - phóng to + nhấp nháy ~1.3s rồi giữ sáng */
   .set-btn.winner {
     background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
     color: #1a1a1a;
     border-color: var(--gold-light);
     z-index: 5;
-    animation: winnerGlow 0.42s ease-in-out 10;
+    animation: winnerGlow 0.42s ease-in-out 3 forwards;
   }
   .set-btn.winner .set-num { color: #1a1a1a; }
   @keyframes winnerGlow {
@@ -1410,11 +1410,11 @@ function randomPickSet() {
 
   // Tính số lần nháy để lần CUỐI cùng dừng đúng ở bộ được chọn thật.
 
-  // Timeline ~5s + winner 5s:
+  // Timeline ~5s + winner 2s:
   //   Phase A (0-2.2s): quay nhanh đều 65ms/lần - nháy NGẪU NHIÊN
   //   Phase B (2.2-4.7s): giảm tốc dần 65ms→250ms - hồi hộp
   //   Phase C: dừng + 3 nốt chốt
-  //   Phase D: winner 5s (chon-bo-de.mp3)
+  //   Phase D: winner nhap nhay ~1.3s giu sang (chon-bo-de.mp3)
   const totalRolls = 34;
   let rollCount = 0;
   let delay = 120;                     // khoảng cách tick hiện tại (ms) - nhanh như bản gốc
@@ -1457,17 +1457,17 @@ function randomPickSet() {
         btns[chosenSet].classList.add('rolling');
         playSFX('btnClick', 0.7);
 
-        // Phase D: sau 0.8s - winner phóng to + nhấp nháy 4s + fanfare + reo hò
+        // Phase D: sau 0.8s - winner phóng to + nhấp nháy ~1.3s + fanfare + reo hò
         setTimeout(() => {
           btns.forEach(b => b.classList.remove('rolling'));
           btns[chosenSet].classList.add('winner');
           playSFX('chonBoDe', 0.85);
           spawnConfetti(60);
-          // Phase E: sau 4s - tắt hiệu ứng, vào đúng bộ đã random
+          // Phase E: sau 2s - tắt hiệu ứng, vào đúng bộ đã random
           setTimeout(() => {
             btns[chosenSet].classList.remove('winner');
             enterSet(chosenSet);
-          }, 4000);
+          }, 2000);
         }, 800);
       }
     }, delay);

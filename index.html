@@ -618,6 +618,8 @@
     display: none;
     align-items: center;
     justify-content: center;
+    padding: 14px;
+    overflow-y: auto;
     background: radial-gradient(circle at 50% 30%, rgba(46, 4, 12, 0.95), rgba(18, 1, 4, 0.98));
     backdrop-filter: blur(20px);
   }
@@ -632,6 +634,9 @@
     width: 92%;
     box-shadow: 0 0 0 6px rgba(248,192,36,0.18), 0 20px 70px rgba(0,0,0,0.8);
     position: relative;
+    margin: auto;
+    max-height: 96vh;
+    overflow-y: auto;
     animation: cardAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .set-panel-card::before {
@@ -643,27 +648,27 @@
   }
   .set-panel-title {
     color: var(--gold);
-    font-size: clamp(22px, 2.8vw, 32px);
+    font-size: clamp(18px, 2.2vw, 26px);
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   .set-panel-sub {
     color: rgba(255,255,255,0.8);
-    font-size: 14px;
-    margin-bottom: 24px;
+    font-size: 12px;
+    margin-bottom: 14px;
   }
   .set-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 16px;
   }  .set-btn {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border: 2px solid var(--gold);
     border-radius: 16px;
-    padding: 18px 8px;
+    padding: clamp(8px, 1.4vh, 16px) 6px;
     color: #fff;
     font-family: inherit;
     font-size: 16px;
@@ -674,17 +679,19 @@
     position: relative;
   }
   .set-btn .set-label {
-    font-size: 13px;
+    font-size: clamp(15px, 2vh, 20px);
     display: block;
     color: #fff;
-    font-weight: 800;
-    margin-bottom: 2px;
+    font-weight: 900;
+    margin-bottom: 0;
+    letter-spacing: 1px;
   }
   .set-btn .set-num {
-    font-size: 44px;
+    font-size: clamp(46px, 8.5vh, 84px);
     display: block;
     color: var(--gold-light);
-    line-height: 1.1;
+    line-height: 1.02;
+    font-weight: 900;
   }
   .set-btn:hover:not(:disabled) {
     transform: translateY(-4px) scale(1.04);

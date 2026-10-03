@@ -1410,17 +1410,17 @@ function randomPickSet() {
 
   // Tính số lần nháy để lần CUỐI cùng dừng đúng ở bộ được chọn thật.
 
-  // Timeline ~5s + winner 3s:
-  //   Phase A (0-2.2s): quay nhanh đều 65ms/lần - nháy NGẪU NHIÊN
-  //   Phase B (2.2-4.7s): giảm tốc dần 65ms→250ms - hồi hộp
+  // Timeline ~6.5s + winner 3s:
+  //   Phase A (0-2.6s): quay nhanh đều 120ms/lần - nháy NGẪU NHIÊN
+  //   Phase B (2.6-6.5s): giảm tốc dần 120ms→250ms - hồi hộp (+2s so với trước)
   //   Phase C: dừng + 3 nốt chốt
   //   Phase D: winner nhap nhay ~1.3s giu sang (chon-bo-de.mp3)
-  const totalRolls = 34;
+  const totalRolls = 46;
   let rollCount = 0;
   let delay = 120;                     // khoảng cách tick hiện tại (ms) - nhanh như bản gốc
   const fastDelay = 120;
   const slowDelay = 250;
-  const slowStart = 22;              // từ tick thứ 34 bắt đầu chậm dần
+  const slowStart = 22;              // từ tick thứ 22 bắt đầu chậm dần
   let lastPick = -1;                 // tránh nháy 2 lần liên tiếp cùng nút
   let rollTimeout = null;
 

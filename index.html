@@ -1262,6 +1262,7 @@ function openSetPanel() {
   stopWaitMusic();
   stopQuestionWaitMusic();
   clearTimeout(finishPhaseTimer);
+  clearTimeout(finishPhaseTimer2);
   document.getElementById('finishOverlay').classList.remove('show');
   document.getElementById('setPanelOverlay').classList.add('show');
   renderSetGrid();
@@ -1371,22 +1372,25 @@ function switchToSet(idx) {
 // Mini game random: quay hiệu ứng đẹp
 // Chọn thật ngẫu nhiên một bộ chưa thi; số dừng và nội dung là cùng một bộ.
 let btnNextSetTimer = null; // hẹn giờ hiện nút chọn bộ tiếp theo trên màn chúc mừng
-let finishPhaseTimer = null; // hẹn giờ đổi giai đoạn màn chúc mừng (3s chúc mừng → mời đội tiếp)
+let finishPhaseTimer = null; // hẹn giờ đổi giai đoạn màn chúc mừng
+let finishPhaseTimer2 = null; // hẹn giờ giai đoạn 3 (mời hai đội vào vị trí)
 
-// Màn chúc mừng 2 giai đoạn:
+// Màn chúc mừng 3 giai đoạn:
 //   Giai đoạn 1 (0-3s): 🏆 CHÚC MỪNG HAI ĐỘI - đã hoàn thành phần thi của mình.
-//   Giai đoạn 2 (từ giây 3): ⏳ - Mời hai đội vào vị trí
+//   Giai đoạn 2 (3-6s): ⏳ - Mời hai đội tiếp theo lên sân khấu chuẩn bị thi
+//   Giai đoạn 3 (từ giây 6): ⏳ - Mời hai đội vào vị trí
 function setFinishPhase(phase) {
   const trophy = document.getElementById('finishTrophy');
   const title = document.getElementById('finishTitle');
   const org = document.getElementById('finishOrg');
   const tagline = document.getElementById('finishTagline');
-  if (phase === 2) {
+  if (phase >= 2) {
     trophy.textContent = '⏳';
     // visibility hidden (không display:none) để giữ nguyên chỗ, card không đổi kích thước
     title.style.visibility = 'hidden';
     org.style.display = 'none';
-    tagline.textContent = 'Mời hai đội vào vị trí';
+    tagline.textContent = phase === 3 ? 'Mời hai đội vào vị trí'
+      : 'Mời hai đội tiếp theo lên sân khấu chuẩn bị thi';
   } else {
     trophy.textContent = '🏆';
     title.style.visibility = '';
@@ -1513,10 +1517,12 @@ function finishCurrentSet() {
   btnNextSetTimer = setTimeout(() => {
     btnNextSet.classList.add('show');
   }, 12000);
-  // Giai đoạn 1: chúc mừng 3s → Giai đoạn 2: mời hai đội vào vị trí (từ giây 3)
+  // Giai đoạn 1: chúc mừng 3s → Giai đoạn 2: mời đội tiếp theo lên sân khấu (3s) → Giai đoạn 3: mời hai đội vào vị trí
   setFinishPhase(1);
   clearTimeout(finishPhaseTimer);
+  clearTimeout(finishPhaseTimer2);
   finishPhaseTimer = setTimeout(() => setFinishPhase(2), 3000);
+  finishPhaseTimer2 = setTimeout(() => setFinishPhase(3), 6000);
 }
 
 function scheduleFinishAfterAnswer(delay = 8000) {

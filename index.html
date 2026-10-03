@@ -408,6 +408,9 @@
     transform: scale(1.1);
   }
 
+  /* Ẩn con trỏ chuột: điều khiển hoàn toàn bằng phím tắt, lia chuột không hiện chữ ký */
+  * { cursor: none !important; }
+
   .fullscreen-toggle {
     position: fixed;
     bottom: 84px;
@@ -1961,6 +1964,68 @@ document.getElementById('fullscreenToggle').addEventListener('mouseenter', sound
 // Gắn âm thanh hover cho nút chức năng
 document.querySelectorAll('.control-bar .ctrl-btn, .start-overlay .start-btn-big, .finish-overlay .start-btn-big, .btn-random, .btn-close-panel').forEach(btn => {
   btn.addEventListener('mouseenter', soundHoverBtn);
+});
+
+// ============ PHÍM TẮT ĐIỀU KHIỂN ============
+// Enter: Bắt đầu | ←: Câu trước | →: Câu tiếp | K: Kết thúc
+// R: Chọn bộ câu hỏi (mở panel) & Ngẫu nhiên (khi panel đang mở)
+// A/B/C/D: chọn đáp án | F: Toàn màn hình | Esc: Thoát toàn màn hình / Đóng panel
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const startOpen = !document.getElementById('startOverlay').classList.contains('hidden');
+  const panelOpen = document.getElementById('setPanelOverlay').classList.contains('show');
+  const finishOpen = document.getElementById('finishOverlay').classList.contains('show');
+  const inQuestion = quizActive && !startOpen && !panelOpen && !finishOpen;
+  const key = e.key;
+
+  // A / B / C / D: chọn đáp án tương ứng
+  if (inQuestion && (key === 'a' || key === 'b' || key === 'c' || key === 'd' ||
+      key === 'A' || key === 'B' || key === 'C' || key === 'D')) {
+    e.preventDefault();
+    pickAnswer(key.toUpperCase().charCodeAt(0) - 65);
+    return;
+  }
+  switch (key) {
+    case 'Enter':
+      e.preventDefault();
+      if (startOpen) startDisplay();
+      break;
+    case 'ArrowLeft':
+      if (inQuestion) { e.preventDefault(); prevQ(); }
+      break;
+    case 'ArrowRight':
+      if (inQuestion) { e.preventDefault(); nextQ(); }
+      break;
+    case 'k':
+    case 'K':
+      if (quizActive && !startOpen && !panelOpen) { e.preventDefault(); finishShow(); }
+      break;
+    case 'r':
+    case 'R':
+      e.preventDefault();
+      if (startOpen) startDisplay();
+      else if (panelOpen) randomPickSet();
+      else openSetPanel();
+      break;
+    case 'f':
+    case 'F':
+      e.preventDefault();
+      // Phóng to toàn màn hình
+      if (!document.fullscreenElement) {
+        soundClick();
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+      break;
+    case 'Escape':
+      // Thoát toàn màn hình; nếu không ở toàn màn hình thì đóng panel chọn bộ
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if (panelOpen) {
+        e.preventDefault();
+        closeSetPanel();
+      }
+      break;
+  }
 });
 
 // Vẽ cờ theo từng dải dọc: mép trái gần cố định, biên độ tăng về phía đuôi cờ.

@@ -1037,6 +1037,38 @@ let strikeCount = 0;       // đếm ngầm, không hiển thị (sai 2 lần �
 let finishAnswerTimer = null;
 let soundEnabled = true;
 
+// ============ TẮT/BẬT TIẾNG TOÀN TRANG (phím M) ============
+let audioMuted = false;
+
+// Âm đang phát: đổi trạng thái ngay; nhạc loop vẫn chạy im lặng để bật lại là nghe tiếp
+function applyMuteState() {
+  [correctAudio, wrongAudio, waitMusic, questionWaitMusic, rollDrum].forEach(a => {
+    if (a) { try { a.muted = audioMuted; } catch (e) {} }
+  });
+  document.querySelectorAll('audio').forEach(a => { try { a.muted = audioMuted; } catch (e) {} });
+}
+
+let muteToastTimer = null;
+function showMuteToast() {
+  let t = document.getElementById('muteToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'muteToast';
+    t.style.cssText = 'position:fixed;left:50%;top:26px;transform:translateX(-50%);z-index:99999;padding:10px 26px;border-radius:999px;background:rgba(15,23,42,.94);color:#fff;font-size:18px;font-weight:700;letter-spacing:.4px;pointer-events:none;opacity:0;transition:opacity .25s ease;box-shadow:0 6px 24px rgba(0,0,0,.35);';
+    document.body.appendChild(t);
+  }
+  t.textContent = audioMuted ? '🔇 Đã tắt tiếng' : '🔊 Đã bật tiếng';
+  t.style.opacity = '1';
+  clearTimeout(muteToastTimer);
+  muteToastTimer = setTimeout(() => { t.style.opacity = '0'; }, 1600);
+}
+
+function toggleAudioMute() {
+  audioMuted = !audioMuted;
+  applyMuteState();
+  showMuteToast();
+}
+
 // ============ AUDIO ============
 let correctAudio = null;
 let wrongAudio = null;
@@ -1055,7 +1087,7 @@ function getAudioCtx() {
 }
 
 function playTone(freq, duration, type, volume, delay = 0) {
-  if (!soundEnabled) return;
+  if (!soundEnabled || audioMuted) return;
   const ctx = getAudioCtx(); if (!ctx) return;
   const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.type = type; osc.frequency.value = freq;
@@ -1068,7 +1100,7 @@ function playTone(freq, duration, type, volume, delay = 0) {
 }
 
 function soundCorrect() {
-  if (!soundEnabled) return;
+  if (!soundEnabled || audioMuted) return;
   initAudio();
   if (correctStopTimeout) clearTimeout(correctStopTimeout);
   correctAudio.currentTime = 0;
@@ -1092,7 +1124,7 @@ function fadeOutAndStop(audio, duration) {
 }
 
 function soundWrong() {
-  if (!soundEnabled) return;
+  if (!soundEnabled || audioMuted) return;
   initAudio();
   wrongAudio.currentTime = 0;
   wrongAudio.play().catch(() => {});
@@ -1113,7 +1145,7 @@ function soundReveal() {
 
 let lastHoverTime = 0;
 function soundHover() {
-  if (!soundEnabled) return;
+  if (!soundEnabled || audioMuted) return;
   const now = Date.now();
   if (now - lastHoverTime < 80) return;
   lastHoverTime = now;
@@ -1316,7 +1348,7 @@ function initSFX() {
 
 // Phát 1 file mới mỗi lần (cho phép chồng âm)
 function playSFX(name, volume = 0.8, maxDuration = 0) {
-  if (!soundEnabled) return;
+  if (!soundEnabled || audioMuted) return;
   initSFX();
   const a = new Audio(SFX[name].src);
   a.volume = volume;
@@ -1346,6 +1378,7 @@ function startRollDrum() {
   rollDrum = new Audio(SFX.rollTick.src);
   rollDrum.loop = true;
   rollDrum.volume = 0.6;
+  rollDrum.muted = audioMuted;
   rollDrum.play().catch(() => {});
 }
 
@@ -1575,6 +1608,7 @@ function startWaitMusic() {
   waitMusic = new Audio(SFX.nhacNenCho.src);
   waitMusic.loop = true;
   waitMusic.volume = 0.6;
+  waitMusic.muted = audioMuted; // đang tắt tiếng thì chạy im, bật M là nghe lại
   waitMusic.play().catch(() => {});
 }
 
@@ -1614,6 +1648,7 @@ function startQuestionWaitMusic() {
     const a = new Audio(SFX.nhacChoCauHoi.src);
     a.loop = true;
     a.volume = QUESTION_WAIT_VOL;
+    a.muted = audioMuted; // đang tắt tiếng thì chạy im, bật M là nghe lại
     questionWaitMusic = a;
     a.play().catch(() => {});
   }, QUESTION_WAIT_DELAY);
@@ -2019,6 +2054,12 @@ document.addEventListener('keydown', function(e) {
         soundClick();
         document.documentElement.requestFullscreen().catch(() => {});
       }
+      break;
+    case 'm':
+    case 'M':
+      // Tắt/bật tiếng toàn trang (âm đang chạy chuyển trạng thái ngay)
+      e.preventDefault();
+      toggleAudioMute();
       break;
     case 'Escape':
       // Thoát toàn màn hình; nếu không ở toàn màn hình thì đóng panel chọn bộ

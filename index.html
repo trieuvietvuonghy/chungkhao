@@ -929,7 +929,7 @@
       </div>
       <div class="intro-rule-card">
         <div class="intro-rule-title">📌 Cấu trúc bộ đề</div>
-        <div class="intro-rule-desc">Gồm <b>10 câu hỏi trắc nghiệm</b> được chọn ngẫu nhiên từ <b>123 câu hỏi</b> ôn tập về công tác kiểm tra, giám sát và thi hành kỷ luật của Đảng.</div>
+        <div class="intro-rule-desc">Gồm <b>10 câu hỏi trắc nghiệm</b> thuộc <b>9 bộ đề cố định</b> ôn tập về công tác kiểm tra, giám sát và thi hành kỷ luật của Đảng.</div>
       </div>
       <div class="intro-rule-card">
         <div class="intro-rule-title">🔔 Giành quyền trả lời</div>
@@ -937,7 +937,7 @@
       </div>
       <div class="intro-rule-card">
         <div class="intro-rule-title">🎯 Quy chế trả lời</div>
-        <div class="intro-rule-desc">Mỗi đội chỉ được chọn <b>1 trong 4</b> phương án A, B, C, D để trả lời. Sau khi giảnh quyền trả lời nhưng trả lời sai thì đội còn lại có quyền trả lời. Nếu cả hai đội cùng trả lời sai thì hệ thống sẽ tự động công bố đáp án.</div>
+        <div class="intro-rule-desc">Mỗi đội chỉ được chọn <b>1 trong 4</b> phương án A, B, C, D để trả lời. Sau khi giành quyền trả lời nhưng trả lời sai thì đội còn lại có quyền trả lời. Nếu cả hai đội cùng trả lời sai thì hệ thống sẽ tự động công bố đáp án.</div>
       </div>
     </div>
 
@@ -1034,6 +1034,7 @@ let currentIdx = 0;
 let wrongPicks = [];       // các đáp án đã chọn sai (ngầm)
 let isAnswered = false;
 let strikeCount = 0;       // đếm ngầm, không hiển thị (sai 2 lần → hiện đáp án)
+let answerLog = {};
 let finishAnswerTimer = null;
 let soundEnabled = true;
 
@@ -1218,9 +1219,19 @@ function renderQuestion() {
     grid.appendChild(div);
   });
 
-  wrongPicks = [];
-  isAnswered = false;
-  strikeCount = 0;
+  const rec = answerLog[currentSet + '-' + currentIdx];
+  wrongPicks = rec ? rec.wrongs.slice() : [];
+  isAnswered = rec ? rec.answered : false;
+  strikeCount = wrongPicks.length;
+  if (rec) {
+    const opts = grid.querySelectorAll('.opt');
+    if (rec.answered) {
+      opts[q.correct].classList.add('picked-correct');
+      opts.forEach((o, i) => { if (i !== q.correct) o.classList.add('dim'); });
+    } else {
+      rec.wrongs.forEach(i => opts[i].classList.add('picked-wrong'));
+    }
+  }
   // Hẹn giờ bật nhạc chờ câu hỏi (loop, vol 0.20): phát từ giây 6 sau khi câu hỏi hiện ra
   startQuestionWaitMusic();
 }
@@ -1237,6 +1248,7 @@ function pickAnswer(idx) {
   // Chọn ĐÚNG
   if (idx === q.correct) {
     isAnswered = true;
+    answerLog[currentSet + '-' + currentIdx] = { wrongs: [], answered: true };
     const opts = document.querySelectorAll('.opt');
     opts.forEach(o => o.classList.remove('picked-wrong', 'dim'));
     opts[idx].classList.add('picked-correct', 'blink-correct');
@@ -1250,6 +1262,7 @@ function pickAnswer(idx) {
   // Chọn SAI - đếm ngầm, không hiển thị số lần sai
   wrongPicks.push(idx);
   strikeCount++;
+  answerLog[currentSet + '-' + currentIdx] = { wrongs: wrongPicks.slice(), answered: false };
   const opts = document.querySelectorAll('.opt');
   opts[idx].classList.add('picked-wrong');
   soundWrong();
@@ -1257,6 +1270,7 @@ function pickAnswer(idx) {
   // Sai đủ 2 lần (ngầm) → tự hiện đáp án đúng, IM LẶNG (luật 2 đội/lượt)
   if (strikeCount >= 2) {
     isAnswered = true;
+    answerLog[currentSet + '-' + currentIdx] = { wrongs: [], answered: true };
     setTimeout(() => {
       opts.forEach(o => o.classList.remove('picked-wrong', 'dim'));
       opts[q.correct].classList.add('picked-correct', 'blink-correct');

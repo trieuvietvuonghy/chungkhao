@@ -1036,6 +1036,9 @@ let isAnswered = false;
 let strikeCount = 0;       // đếm ngầm, không hiển thị (sai 2 lần → hiện đáp án)
 let answerLog = {};
 let finishAnswerTimer = null;
+let finishWaitTimer = null;
+let randomSession = 0;
+let randomRunning = false;
 let soundEnabled = true;
 
 // ============ TẮT/BẬT TIẾNG TOÀN TRANG (phím M) ============
@@ -1237,6 +1240,7 @@ function renderQuestion() {
 }
 
 function pickAnswer(idx) {
+  if (!quizActive) return;
   if (isAnswered) return;
   const q = QUESTION_SETS[currentSet][currentIdx];
   // Chọn lại đáp án đã sai trước đó → không làm gì (giữ nguyên nhạc)
@@ -1309,6 +1313,11 @@ function renderSetGrid() {
 }
 
 function openSetPanel() {
+  clearTimeout(finishAnswerTimer);
+  clearTimeout(finishWaitTimer);
+  clearTimeout(btnNextSetTimer);
+  randomSession++;
+  randomRunning = false;
   soundClick();
   stopPaperCannon();
   stopWaitSparkle();
@@ -1322,6 +1331,8 @@ function openSetPanel() {
 }
 
 function closeSetPanel() {
+  randomSession++;
+  randomRunning = false;
   soundClick();
   stopRollDrum(); // tránh trống kêu lơ lửng nếu đóng giữa lúc quay
   document.getElementById('setPanelOverlay').classList.remove('show');
@@ -1411,6 +1422,8 @@ function stopRollDrum() {
   }
 }
 function switchToSet(idx) {
+  randomSession++;
+  randomRunning = false;
   if (finishedSets.includes(idx)) return;
   // Bấm đúng bộ đang thi → chỉ đóng panel, thi tiếp, không reset
   if (quizActive && idx === currentSet) {
@@ -1453,11 +1466,14 @@ function setFinishPhase(phase) {
   }
 }
 function randomPickSet() {
+  if (randomRunning) return;
   const available = [];
   for (let i = 0; i < QUESTION_SETS.length; i++) {
     if (!finishedSets.includes(i)) available.push(i);
   }
   if (available.length === 0) return;
+  randomRunning = true;
+  const session = ++randomSession;
 
   soundClick();
   document.getElementById('btnRandom').disabled = true;
@@ -1484,6 +1500,7 @@ function randomPickSet() {
 
   function scheduleTick() {
     rollTimeout = setTimeout(() => {
+      if (session !== randomSession) return;
       // Tính delay cho tick này (gia tốc chậm dần sau tick 55)
       if (rollCount >= slowStart) {
         const t = (rollCount - slowStart) / (totalRolls - slowStart);
@@ -1517,12 +1534,14 @@ function randomPickSet() {
 
         // Phase D: sau 0.8s - winner phóng to + nhấp nháy ~1.3s + fanfare + reo hò
         setTimeout(() => {
+          if (session !== randomSession) return;
           btns.forEach(b => b.classList.remove('rolling'));
           btns[chosenSet].classList.add('winner');
           playSFX('chonBoDe', 0.85);
           spawnConfetti(60);
           // Phase E: sau 3s - tắt hiệu ứng, vào đúng bộ đã random
           setTimeout(() => {
+            if (session !== randomSession) return;
             btns[chosenSet].classList.remove('winner');
             enterSet(chosenSet);
           }, 3000);
@@ -1536,6 +1555,16 @@ function randomPickSet() {
 
 // Vào đúng bộ đã chọn, dù chọn trực tiếp hay qua Random.
 function enterSet(setIndex) {
+  randomSession++;
+  randomRunning = false;
+  clearTimeout(finishWaitTimer);
+  clearTimeout(btnNextSetTimer);
+  clearTimeout(finishPhaseTimer);
+  clearTimeout(finishPhaseTimer2);
+  stopWaitMusic();
+  stopWaitSparkle();
+  stopPaperCannon();
+  document.getElementById('finishOverlay').classList.remove('show');
   clearTimeout(finishAnswerTimer);
   currentSet = setIndex;
   currentIdx = 0;
@@ -1561,8 +1590,12 @@ function finishCurrentSet() {
   soundCorrect();
   startPaperCannon(6400);
   playSFX('hoanThanh', 0.85);
-  setTimeout(() => startWaitSparkle(), 6900);
-  setTimeout(() => startWaitMusic(), 6900);
+  clearTimeout(finishWaitTimer);
+  finishWaitTimer = setTimeout(() => {
+    if (!document.getElementById('finishOverlay').classList.contains('show')) return;
+    startWaitSparkle();
+    startWaitMusic();
+  }, 6900);
   // Nút chọn bộ tiếp theo xuất hiện chậm hơn 15s sau khi màn chúc mừng hiện ra
   const btnNextSet = document.getElementById('btnNextSet');
   // Nút luôn chiếm chỗ (visibility) nên card không nhảy; hiện mờ→đậm dần sau 12s
@@ -1589,6 +1622,7 @@ function scheduleFinishAfterAnswer(delay = 8000) {
 }
 
 function nextQ() {
+  if (!quizActive || finishedSets.includes(currentSet)) return;
   soundClick();
   clearTimeout(finishAnswerTimer);
   if (currentIdx < QUESTION_SETS[currentSet].length - 1) {
@@ -1600,6 +1634,7 @@ function nextQ() {
 }
 
 function prevQ() {
+  if (!quizActive || finishedSets.includes(currentSet)) return;
   soundClick();
   clearTimeout(finishAnswerTimer);
   if (currentIdx > 0) {
@@ -1949,6 +1984,7 @@ function startPaperCannon(duration) {
 }
 
 function finishShow() {
+  if (!quizActive) return;
   soundClick();
   stopPaperCannon();
   stopWaitSparkle();

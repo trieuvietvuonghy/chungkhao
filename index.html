@@ -1622,7 +1622,7 @@ function scheduleFinishAfterAnswer(delay = 8000) {
 }
 
 function nextQ() {
-  if (!quizActive || finishedSets.includes(currentSet)) return;
+  if (!quizActive) return;
   soundClick();
   clearTimeout(finishAnswerTimer);
   if (currentIdx < QUESTION_SETS[currentSet].length - 1) {
@@ -1634,7 +1634,7 @@ function nextQ() {
 }
 
 function prevQ() {
-  if (!quizActive || finishedSets.includes(currentSet)) return;
+  if (!quizActive) return;
   soundClick();
   clearTimeout(finishAnswerTimer);
   if (currentIdx > 0) {
